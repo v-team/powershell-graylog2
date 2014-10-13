@@ -149,9 +149,9 @@ function Connect-Graylog2Rest {
 	.PARAMETER restPort
 	Used to specified custom (aka non-12900) REST API port
 	.PARAMETER restUsername
-	USername used to connect to Graylog2 REST API (if not specified, Get-Credentials will be prompted)
+	Username used to connect to Graylog2 REST API (if not specified, Get-Credentials will be prompted)
 	.PARAMETER restPassword
-	USername used to connect to Graylog2 REST API (if not specified, Get-Credentials will be prompted)
+	Password for username used to connect to Graylog2 REST API (if not specified, Get-Credentials will be prompted)
 	#>
 
 	[CmdletBinding()]
