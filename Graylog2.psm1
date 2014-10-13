@@ -141,10 +141,10 @@ function Connect-Graylog2Rest {
 	Connect to Graylog2 server through REST API and validate supplied credentials (or prompt for credentials if not specified).
 	The result will display information about Graylog2 system
 	.EXAMPLE
-	Connect-Graylog2Rest -restIp 69.69.69.69 -restUsername "admin" -restPassword "graylog2rocks"
+	Connect-Graylog2Rest -restInstance 69.69.69.69 -restUsername "admin" -restPassword "graylog2rocks"
 	.EXAMPLE
-	Connect-Graylog2Rest -restIp 69.69.69.69 -restPort 14900
-	.PARAMETER restIp
+	Connect-Graylog2Rest -restInstance 69.69.69.69 -restPort 14900
+	.PARAMETER restInstance
 	IP address of Graylog2 REST API instance
 	.PARAMETER restPort
 	Used to specified custom (aka non-12900) REST API port
@@ -156,7 +156,7 @@ function Connect-Graylog2Rest {
 
 	[CmdletBinding()]
 	param (
-		[Parameter(Mandatory=$True)][string]$restIp,
+		[Parameter(Mandatory=$True)][string]$restInstance,
 		[string]$restUsername,
 		[string]$restPassword,
 		[int]$restPort = 12900
@@ -170,11 +170,11 @@ function Connect-Graylog2Rest {
 	
 	# These global variables will be used for further functions
 	$Global:credentialRest = $credentialRest
-	$Global:restIp = $restIp
+	$Global:restInstance = $restInstance
 	$Global:restPort = $restPort
 
 	try {
-		$connectionState = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system" -Headers (_Get_HttpBasicHeader_)
+		$connectionState = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -234,7 +234,7 @@ function Get-Graylog2StreamAlert {
 	}
 
 	try {
-		$streamAlerts = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/streams/$streamId/alerts" -Headers (_Get_HttpBasicHeader_)
+		$streamAlerts = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/streams/$streamId/alerts" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -269,7 +269,7 @@ function Test-Graylog2StreamAlert {
 	}
 
 	try {
-		$streamAlertCheck = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/streams/$streamId/alerts/check" -Headers (_Get_HttpBasicHeader_)
+		$streamAlertCheck = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/streams/$streamId/alerts/check" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -367,7 +367,7 @@ function New-Graylog2StreamAlertConditions {
 	$hashRequest.Add("parameters",$hashParametersRequest)
 
 	try {
-		$alertConditionId = Invoke-RestMethod -Method Post -Uri "http://$($restIp):$restPort/streams/$streamId/alerts/conditions" -Headers (_Get_HttpBasicHeader_) -ContentType "application/json" -Body ($hashRequest | ConvertTo-Json -Compress)
+		$alertConditionId = Invoke-RestMethod -Method Post -Uri "http://$($restInstance):$restPort/streams/$streamId/alerts/conditions" -Headers (_Get_HttpBasicHeader_) -ContentType "application/json" -Body ($hashRequest | ConvertTo-Json -Compress)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Write-Host -ForegroundColor Red "JSON body:"
@@ -399,7 +399,7 @@ function Get-Graylog2StreamAlertConditions {
 	}
 
 	try {
-		$streamAlertConditions = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/streams/$streamId/alerts/conditions" -Headers (_Get_HttpBasicHeader_)
+		$streamAlertConditions = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/streams/$streamId/alerts/conditions" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -437,7 +437,7 @@ function Remove-Graylog2StreamAlertConditions {
 	}	
 	
 	try {
-		$streamAlertCondition = Invoke-WebRequest -Method Delete -Uri "http://$($restIp):$restPort/streams/$streamId/alerts/conditions/$conditionId" -Headers (_Get_HttpBasicHeader_)
+		$streamAlertCondition = Invoke-WebRequest -Method Delete -Uri "http://$($restInstance):$restPort/streams/$streamId/alerts/conditions/$conditionId" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -483,7 +483,7 @@ function New-Graylog2StreamAlertReceivers {
 	}
 	
 	try {
-		$streamAlertReceiver = Invoke-RestMethod -Method Post -Uri "http://$($restIp):$restPort/streams/$streamId/alerts/receivers?entity=$entity&type=$type" -Headers (_Get_HttpBasicHeader_)
+		$streamAlertReceiver = Invoke-RestMethod -Method Post -Uri "http://$($restInstance):$restPort/streams/$streamId/alerts/receivers?entity=$entity&type=$type" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -528,7 +528,7 @@ function Remove-Graylog2StreamAlertReceivers {
 	}
 	
 	try {
-		$streamAlertReceiver = Invoke-WebRequest -Method Delete -Uri "http://$($restIp):$restPort/streams/$streamId/alerts/receivers?entity=$entity&type=$type" -Headers (_Get_HttpBasicHeader_)
+		$streamAlertReceiver = Invoke-WebRequest -Method Delete -Uri "http://$($restInstance):$restPort/streams/$streamId/alerts/receivers?entity=$entity&type=$type" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -559,7 +559,7 @@ function Send-Graylog2DummyStreamAlert {
 	}
 	
 	try {
-		$streamDummyAlert = Invoke-RestMethod -Method Post -Uri "http://$($restIp):$restPort/streams/$streamId/alerts/sendDummyAlert" -Headers (_Get_HttpBasicHeader_)
+		$streamDummyAlert = Invoke-RestMethod -Method Post -Uri "http://$($restInstance):$restPort/streams/$streamId/alerts/sendDummyAlert" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -586,7 +586,7 @@ function Get-Graylog2MessageCounts {
 	#>
 
 	try {
-		$messageCount = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/count/total" -Headers (_Get_HttpBasicHeader_)
+		$messageCount = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/count/total" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -613,7 +613,7 @@ function Get-Graylog2Dashboards {
 	#>
 
 	try {
-		$dashboards = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/dashboards" -Headers (_Get_HttpBasicHeader_)
+		$dashboards = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/dashboards" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -647,7 +647,7 @@ function Get-Graylog2Dashboard {
 	}
 
 	try {
-		$dashboard = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/dashboards/$dashboardId" -Headers (_Get_HttpBasicHeader_)
+		$dashboard = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/dashboards/$dashboardId" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -677,7 +677,7 @@ function Remove-Graylog2Dashboard {
 	}
 
 	try {
-		$dashboardDeleted = Invoke-WebRequest -Method Delete -Uri "http://$($restIp):$restPort/dashboards/$dashboardId" -Headers (_Get_HttpBasicHeader_)
+		$dashboardDeleted = Invoke-WebRequest -Method Delete -Uri "http://$($restInstance):$restPort/dashboards/$dashboardId" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -743,7 +743,7 @@ function Get-Graylog2Extractors {
 	}
 
 	try {
-		$extractors = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system/inputs/$inputId/extractors" -Headers (_Get_HttpBasicHeader_)
+		$extractors = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system/inputs/$inputId/extractors" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -780,7 +780,7 @@ function Remove-Graylog2Extractor {
 	}
 
 	try {
-		$extractorDeleted = Invoke-WebRequest -Method Delete -Uri "http://$($restIp):$restPort/system/inputs/$inputId/extractors/$extractorId" -Headers (_Get_HttpBasicHeader_)
+		$extractorDeleted = Invoke-WebRequest -Method Delete -Uri "http://$($restInstance):$restPort/system/inputs/$inputId/extractors/$extractorId" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -808,7 +808,7 @@ function Get-Graylog2ClusterHealth {
 	#>
 
 	try {
-		$clusterHealth = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system/indexer/cluster/health" -Headers (_Get_HttpBasicHeader_)
+		$clusterHealth = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system/indexer/cluster/health" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -826,7 +826,7 @@ function Get-Graylog2ClusterName {
 	#>
 
 	try {
-		$clusterName = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system/indexer/cluster/name" -Headers (_Get_HttpBasicHeader_)
+		$clusterName = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system/indexer/cluster/name" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -853,7 +853,7 @@ function Get-Graylog2ClosedIndices {
 	#>
 
 	try {
-		$closedIndices = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system/indexer/indices/closed" -Headers (_Get_HttpBasicHeader_)
+		$closedIndices = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system/indexer/indices/closed" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -885,7 +885,7 @@ function Remove-Graylog2Index {
 	)
 
 	try {
-		$removedIndex = Invoke-WebRequest -Method Delete -Uri "http://$($restIp):$restPort/system/indexer/indices/$index" -Headers (_Get_HttpBasicHeader_)
+		$removedIndex = Invoke-WebRequest -Method Delete -Uri "http://$($restInstance):$restPort/system/indexer/indices/$index" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -911,7 +911,7 @@ function Get-Graylog2IndexInformation {
 	)
 
 	try {
-		$indexInformation = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system/indexer/indices/$index" -Headers (_Get_HttpBasicHeader_)
+		$indexInformation = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system/indexer/indices/$index" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -938,7 +938,7 @@ function Close-Graylog2Index {
 	)
 
 	try {
-		$closedIndex = Invoke-RestMethod -Method Post -Uri "http://$($restIp):$restPort/system/indexer/indices/$index/close" -Headers (_Get_HttpBasicHeader_)
+		$closedIndex = Invoke-RestMethod -Method Post -Uri "http://$($restInstance):$restPort/system/indexer/indices/$index/close" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -965,7 +965,7 @@ function Resume-Graylog2Index {
 	)
 
 	try {
-		$reopenIndex = Invoke-RestMethod -Method Post -Uri "http://$($restIp):$restPort/system/indexer/indices/$index/reopen" -Headers (_Get_HttpBasicHeader_)
+		$reopenIndex = Invoke-RestMethod -Method Post -Uri "http://$($restInstance):$restPort/system/indexer/indices/$index/reopen" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1009,7 +1009,7 @@ function Get-Graylog2SavedSearches {
 	#>
 
 	try {
-		$savedSearches = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/search/saved" -Headers (_Get_HttpBasicHeader_) -ContentType "application/json"
+		$savedSearches = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/search/saved" -Headers (_Get_HttpBasicHeader_) -ContentType "application/json"
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1082,7 +1082,7 @@ function New-Graylog2SavedSearch {
 	$hashRequest.Add("query",$hashQueryRequest)
 
 	try {
-		$saveSearch = Invoke-RestMethod -Method Post -Uri "http://$($restIp):$restPort/search/saved" -Headers (_Get_HttpBasicHeader_) -ContentType "application/json" -Body ($hashRequest | ConvertTo-Json -Compress)
+		$saveSearch = Invoke-RestMethod -Method Post -Uri "http://$($restInstance):$restPort/search/saved" -Headers (_Get_HttpBasicHeader_) -ContentType "application/json" -Body ($hashRequest | ConvertTo-Json -Compress)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Write-Host -ForegroundColor Red "JSON body:"
@@ -1114,7 +1114,7 @@ function Get-Graylog2SavedSearch {
 	}
 
 	try {
-		$savedSearch = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/search/saved/$searchId" -Headers (_Get_HttpBasicHeader_)
+		$savedSearch = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/search/saved/$searchId" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1144,7 +1144,7 @@ function Remove-Graylog2SavedSearch {
 	}
 
 	try {
-		$deletedSearch = Invoke-WebRequest -Method Delete -Uri "http://$($restIp):$restPort/search/saved/$searchId" -Headers (_Get_HttpBasicHeader_)
+		$deletedSearch = Invoke-WebRequest -Method Delete -Uri "http://$($restInstance):$restPort/search/saved/$searchId" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1180,7 +1180,7 @@ function Get-Graylog2Sources {
 	)
 
 	try {
-		$sourcesList = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/sources?range=$msRange" -Headers (_Get_HttpBasicHeader_)
+		$sourcesList = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/sources?range=$msRange" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1241,7 +1241,7 @@ function Get-Graylog2StreamRules {
 	}
 
 	try {
-		$streamRules = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/streams/$streamId/rules" -Headers (_Get_HttpBasicHeader_)
+		$streamRules = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/streams/$streamId/rules" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1305,7 +1305,7 @@ function New-Graylog2StreamRule {
 	}
 
 	try {
-		$streamRuleId = Invoke-RestMethod -Method Post -Uri "http://$($restIp):$restPort/streams/$stream_id/rules" -Headers (_Get_HttpBasicHeader_) -ContentType "application/json" -Body ($hashRequest | ConvertTo-Json -Compress)
+		$streamRuleId = Invoke-RestMethod -Method Post -Uri "http://$($restInstance):$restPort/streams/$stream_id/rules" -Headers (_Get_HttpBasicHeader_) -ContentType "application/json" -Body ($hashRequest | ConvertTo-Json -Compress)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Write-Host -ForegroundColor Red "JSON body:"
@@ -1340,7 +1340,7 @@ function Get-Graylog2StreamRule {
 	}
 
 	try {
-		$streamRule = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/streams/$streamId/rules/$streamRuleId" -Headers (_Get_HttpBasicHeader_)
+		$streamRule = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/streams/$streamId/rules/$streamRuleId" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1373,7 +1373,7 @@ function Remove-Graylog2StreamRule {
 	}
 
 	try {
-		$deletedStreamRule = Invoke-WebRequest -Method Delete -Uri "http://$($restIp):$restPort/streams/$streamId/rules/$streamRuleId" -Headers (_Get_HttpBasicHeader_)
+		$deletedStreamRule = Invoke-WebRequest -Method Delete -Uri "http://$($restInstance):$restPort/streams/$streamId/rules/$streamRuleId" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1403,7 +1403,7 @@ function Get-Graylog2Streams {
 	#>
 
 	try {
-		$streams = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/streams" -Headers (_Get_HttpBasicHeader_)
+		$streams = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/streams" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1448,7 +1448,7 @@ function New-Graylog2Stream {
 	}
 
 	try {
-		$stream = Invoke-RestMethod -Method Post -Uri "http://$($restIp):$restPort/streams" -Headers (_Get_HttpBasicHeader_) -ContentType "application/json" -Body ($hashRequest | ConvertTo-Json -Compress)
+		$stream = Invoke-RestMethod -Method Post -Uri "http://$($restInstance):$restPort/streams" -Headers (_Get_HttpBasicHeader_) -ContentType "application/json" -Body ($hashRequest | ConvertTo-Json -Compress)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Write-Host -ForegroundColor Red "JSON body:"
@@ -1460,7 +1460,7 @@ function New-Graylog2Stream {
 	if ($enabled) {
 		try {
 			$streamId = $stream.stream_id
-			$streamEnabled = Invoke-RestMethod -Method Post -Uri "http://$($restIp):$restPort/streams/$streamId/resume" -Headers (_Get_HttpBasicHeader_)
+			$streamEnabled = Invoke-RestMethod -Method Post -Uri "http://$($restInstance):$restPort/streams/$streamId/resume" -Headers (_Get_HttpBasicHeader_)
 		} catch {
 			Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 			Return
@@ -1479,7 +1479,7 @@ function Get-Graylog2EnabledStream {
 	#>
 
 	try {
-		$streams = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/streams/enabled" -Headers (_Get_HttpBasicHeader_)
+		$streams = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/streams/enabled" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1509,7 +1509,7 @@ function Get-Graylog2Stream {
 	}
 
 	try {
-		$stream = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/streams/$streamId" -Headers (_Get_HttpBasicHeader_)
+		$stream = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/streams/$streamId" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1539,7 +1539,7 @@ function Remove-Graylog2Stream {
 	}
 
 	try {
-		$stream = Invoke-WebRequest -Method Delete -Uri "http://$($restIp):$restPort/streams/$streamId" -Headers (_Get_HttpBasicHeader_)
+		$stream = Invoke-WebRequest -Method Delete -Uri "http://$($restInstance):$restPort/streams/$streamId" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1578,7 +1578,7 @@ function Suspend-Graylog2Stream {
 	}
 
 	try {
-		$pausedStream = Invoke-RestMethod -Method Post -Uri "http://$($restIp):$restPort/streams/$streamId/pause" -Headers (_Get_HttpBasicHeader_)
+		$pausedStream = Invoke-RestMethod -Method Post -Uri "http://$($restInstance):$restPort/streams/$streamId/pause" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1608,7 +1608,7 @@ function Resume-Graylog2Stream {
 	}
 
 	try {
-		$resumedStream = Invoke-RestMethod -Method Post -Uri "http://$($restIp):$restPort/streams/$streamId/resume" -Headers (_Get_HttpBasicHeader_)
+		$resumedStream = Invoke-RestMethod -Method Post -Uri "http://$($restInstance):$restPort/streams/$streamId/resume" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1642,7 +1642,7 @@ function Get-Graylog2StreamThroughput {
 	}
 
 	try {
-		$streamThroughput = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/streams/$streamId/throughput" -Headers (_Get_HttpBasicHeader_)
+		$streamThroughput = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/streams/$streamId/throughput" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1669,7 +1669,7 @@ function Get-Graylog2SystemOverview {
 	#>
 
 	try {
-		$systemOverview = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system" -Headers (_Get_HttpBasicHeader_)
+		$systemOverview = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1694,7 +1694,7 @@ function Get-Graylog2SystemFields {
 	)
 
 	try {
-		$systemFields = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system/fields?limit=$limit" -Headers (_Get_HttpBasicHeader_)
+		$systemFields = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system/fields?limit=$limit" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1712,7 +1712,7 @@ function Get-Graylog2JVMInformation {
 	#>
 
 	try {
-		$jvmInformation = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system/jvm" -Headers (_Get_HttpBasicHeader_)
+		$jvmInformation = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system/jvm" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1730,7 +1730,7 @@ function Get-Graylog2Permissions {
 	#>
 
 	try {
-		$permissions = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system/permissions" -Headers (_Get_HttpBasicHeader_)
+		$permissions = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system/permissions" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1758,7 +1758,7 @@ function Get-Graylog2UserPermissions {
 	}
 
 	try {
-		$userPermissions = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system/permissions/reader/$username" -Headers (_Get_HttpBasicHeader_)
+		$userPermissions = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system/permissions/reader/$username" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1776,7 +1776,7 @@ function Suspend-Graylog2MessageProcessing {
 	#>
 
 	try {
-		$suspendedMessageProcessing = Invoke-RestMethod -Method Put -Uri "http://$($restIp):$restPort/system/processing/pause" -Headers (_Get_HttpBasicHeader_)
+		$suspendedMessageProcessing = Invoke-RestMethod -Method Put -Uri "http://$($restInstance):$restPort/system/processing/pause" -Headers (_Get_HttpBasicHeader_)
 		Write-Host "Message processing is paused"
 		Write-Host -ForegroundColor Yellow "Inputs that are able to reject or requeue messages will do so, others will buffer messages in memory. Keep an eye on the heap space utilization while message processing is paused."
 	} catch {
@@ -1796,7 +1796,7 @@ function Resume-Graylog2MessageProcessing {
 	#>
 
 	try {
-		$resumedMessageProcessing = Invoke-RestMethod -Method Put -Uri "http://$($restIp):$restPort/system/processing/resume" -Headers (_Get_HttpBasicHeader_)
+		$resumedMessageProcessing = Invoke-RestMethod -Method Put -Uri "http://$($restInstance):$restPort/system/processing/resume" -Headers (_Get_HttpBasicHeader_)
 		Write-Host -ForegroundColor Green "Message processing is resumed"
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
@@ -1815,7 +1815,7 @@ function Get-Graylog2ThreadDump {
 	#>
 
 	try {
-		$threadDump = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system/threaddump" -Headers (_Get_HttpBasicHeader_)
+		$threadDump = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system/threaddump" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1842,7 +1842,7 @@ function Get-Graylog2BufferInformation {
 	#>
 
 	try {
-		$bufferInformation = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system/buffers" -Headers (_Get_HttpBasicHeader_)
+		$bufferInformation = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system/buffers" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1869,7 +1869,7 @@ function Get-Graylog2Node {
 	#>
 
 	try {
-		$nodes = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system/cluster/node" -Headers (_Get_HttpBasicHeader_)
+		$nodes = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system/cluster/node" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1888,7 +1888,7 @@ function Get-Graylog2Nodes {
 	#>
 
 	try {
-		$nodes = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system/cluster/nodes" -Headers (_Get_HttpBasicHeader_)
+		$nodes = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system/cluster/nodes" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1918,7 +1918,7 @@ function Get-Graylog2NodeInformation {
 	}
 
 	try {
-		$node = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system/cluster/nodes/$nodeId" -Headers (_Get_HttpBasicHeader_)
+		$node = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system/cluster/nodes/$nodeId" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1946,7 +1946,7 @@ function Get-Graylog2DeflectorStatus {
 	#>
 
 	try {
-		$deflectorStatus = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system/deflector" -Headers (_Get_HttpBasicHeader_)
+		$deflectorStatus = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system/deflector" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1964,7 +1964,7 @@ function Get-Graylog2DeflectorConfiguration {
 	#>
 
 	try {
-		$deflectorConfiguration = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system/deflector/config" -Headers (_Get_HttpBasicHeader_)
+		$deflectorConfiguration = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system/deflector/config" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -1982,7 +1982,7 @@ function New-Graylog2CycleDeflector {
 	#>
 
 	try {
-		$newDeflector = Invoke-RestMethod -Method Post -Uri "http://$($restIp):$restPort/system/deflector" -Headers (_Get_HttpBasicHeader_)
+		$newDeflector = Invoke-RestMethod -Method Post -Uri "http://$($restInstance):$restPort/system/deflector" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -2009,7 +2009,7 @@ function Get-Graylog2Inputs {
 	#>
 
 	try {
-		$nodeInput = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system/inputs" -Headers (_Get_HttpBasicHeader_) -ContentType "application/json"
+		$nodeInput = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system/inputs" -Headers (_Get_HttpBasicHeader_) -ContentType "application/json"
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -2249,7 +2249,7 @@ function New-Graylog2Input {
 	$hashRequest.Add("configuration",$hashAttributesRequest)
 
 	try {
-		$inputId = Invoke-RestMethod -Method Post -Uri "http://$($restIp):$restPort/system/inputs" -Headers (_Get_HttpBasicHeader_) -ContentType "application/json" -Body ($hashRequest | ConvertTo-Json -Compress)
+		$inputId = Invoke-RestMethod -Method Post -Uri "http://$($restInstance):$restPort/system/inputs" -Headers (_Get_HttpBasicHeader_) -ContentType "application/json" -Body ($hashRequest | ConvertTo-Json -Compress)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Write-Host -ForegroundColor Red "JSON body:"
@@ -2270,7 +2270,7 @@ function Get-Graylog2InputTypes {
 
 	try {
 		$tabInputTypes = @()
-		$inputTypes = [string](Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system/inputs/types" -Headers (_Get_HttpBasicHeader_)).types
+		$inputTypes = [string](Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system/inputs/types" -Headers (_Get_HttpBasicHeader_)).types
 		$inputTypes = $inputTypes.Substring(2,$inputTypes.Length-3)
 		foreach ($inputType in $inputTypes.Split(";")) {
 			$tmpLine = "" | Select typeID, typeName
@@ -2307,7 +2307,7 @@ function Get-Graylog2InputType {
 	}
 
 	try {
-		$inputType = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system/inputs/types/$inputTypeId" -Headers (_Get_HttpBasicHeader_)
+		$inputType = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system/inputs/types/$inputTypeId" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -2337,7 +2337,7 @@ function Remove-Graylog2Input {
 	}
 
 	try {
-		$inputType = Invoke-WebRequest -Method Delete -Uri "http://$($restIp):$restPort/system/inputs/types/$inputTypeId" -Headers (_Get_HttpBasicHeader_)
+		$inputType = Invoke-WebRequest -Method Delete -Uri "http://$($restInstance):$restPort/system/inputs/types/$inputTypeId" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -2367,7 +2367,7 @@ function Get-Graylog2InputInformation {
 	}
 
 	try {
-		$inputInformation = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system/inputs/$inputTypeId" -Headers (_Get_HttpBasicHeader_)
+		$inputInformation = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system/inputs/$inputTypeId" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -2397,7 +2397,7 @@ function Start-Graylog2Input {
 	}	
 
 	try {
-		$inputId = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/system/inputs/$inputTypeId/launch" -Headers (_Get_HttpBasicHeader_)
+		$inputId = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/system/inputs/$inputTypeId/launch" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
@@ -2424,7 +2424,7 @@ function Get-Graylog2Users {
 	#>
 
 	try {
-		$users = Invoke-RestMethod -Method Get -Uri "http://$($restIp):$restPort/users" -Headers (_Get_HttpBasicHeader_)
+		$users = Invoke-RestMethod -Method Get -Uri "http://$($restInstance):$restPort/users" -Headers (_Get_HttpBasicHeader_)
 	} catch {
 		Write-Host -ForegroundColor Red "Exception Message: $($_.Exception.Message)"
 		Return
